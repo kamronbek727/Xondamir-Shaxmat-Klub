@@ -38,13 +38,13 @@
         }
 
         .sidebar-transition {
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 4px;
+            height: 4px;
         }
 
         ::-webkit-scrollbar-track {
@@ -89,6 +89,24 @@
             transform: translateY(0);
             opacity: 1;
         }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .page-content {
+                padding-bottom: 2rem;
+            }
+            input, select, textarea {
+                font-size: 16px !important; /* Prevents iOS auto-zoom */
+            }
+            .modal-content {
+                max-height: 95vh;
+                margin: 0.5rem;
+            }
+        }
+
+        /* Smooth Hide/Show transition */
+        .fade-enter { opacity: 0; }
+        .fade-enter-active { opacity: 1; transition: opacity 200ms ease-in; }
     </style>
 </head>
 
@@ -96,6 +114,10 @@
 
     <!-- Toast Notification -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()"
+        class="fixed inset-0 bg-slate-900/60 z-30 hidden md:hidden transition-opacity duration-300 opacity-0"></div>
 
     <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50">
@@ -247,12 +269,12 @@
                                 <option value="all">Hammasi</option>
                             </select>
                         </div>
-                        <button onclick="openModal('studentModal')"
+                        <button onclick="document.getElementById('studentDbId').value=''; document.getElementById('studentForm').reset(); document.getElementById('studentModalTitle').textContent='O\'quvchi Qo\'shish'; const pr = document.getElementById('stPointsRow'); if(currentUser.role==='superadmin') pr.classList.remove('hidden'); else pr.classList.add('hidden'); openModal('studentModal')"
                             class="bg-primary hover:bg-secondary text-white px-5 py-2 rounded-xl font-medium transition shadow-sm flex items-center gap-2">
                             <i class="fas fa-plus"></i> Yangi O'quvchi
                         </button>
                     </div>
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
@@ -272,6 +294,11 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+
+                    <!-- Mobile Card View -->
+                    <div id="studentsCardContainer" class="md:hidden space-y-4">
+                        <!-- Rendered dynamically -->
                     </div>
                 </div>
 
@@ -335,7 +362,7 @@
                                 <span class="text-red-600"><i class="fas fa-times-circle"></i> SABABSIZ</span>
                             </div>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="hidden md:block overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="bg-white text-slate-500 text-sm border-b border-slate-200">
@@ -347,6 +374,9 @@
                                 <tbody id="attendanceTableBody" class="divide-y divide-slate-100 text-sm">
                                 </tbody>
                             </table>
+                        </div>
+                        <!-- Mobile Attendance Cards -->
+                        <div id="attendanceCards" class="md:hidden p-4 space-y-4 bg-slate-50">
                         </div>
                         <div class="p-2 border-t border-slate-100 flex justify-end">
                             <!-- Saqlash tugmasi olib tashlandi, har bir davomat avtomatik saqlanadi -->
@@ -366,7 +396,7 @@
                                 placeholder="Ism yoki sabab bo'yicha qidirish...">
                         </div>
                     </div>
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
@@ -381,6 +411,9 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                    <!-- Mobile Absentees Cards -->
+                    <div id="absenteesCards" class="md:hidden space-y-4">
                     </div>
                 </div>
 
@@ -405,7 +438,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-sm border-b border-slate-200">
@@ -418,6 +451,9 @@
                             <tbody id="leaderboardBody" class="divide-y divide-slate-100 text-sm">
                             </tbody>
                         </table>
+                    </div>
+                    <!-- Mobile Leaderboard Cards -->
+                    <div id="leaderboardCards" class="md:hidden space-y-4">
                     </div>
                 </div>
 
@@ -545,7 +581,7 @@
                             <i class="fas fa-plus"></i> Admin qo'shish
                         </button>
                     </div>
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-sm border-b border-slate-200">
@@ -557,6 +593,9 @@
                             <tbody id="adminsTableBody" class="divide-y divide-slate-100 text-sm">
                             </tbody>
                         </table>
+                    </div>
+                    <!-- Mobile Admins Cards -->
+                    <div id="adminsCards" class="md:hidden space-y-4">
                     </div>
                 </div>
                 <!-- Payments Page -->
@@ -622,7 +661,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
@@ -638,11 +677,14 @@
                             </table>
                         </div>
                     </div>
+                    <!-- Mobile Payments Cards -->
+                    <div id="paymentsCards" class="md:hidden space-y-4">
+                    </div>
                 </div>
 
                 <!-- Requests Page -->
                 <div id="page-requests" class="page-content hidden space-y-4">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
@@ -658,6 +700,9 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                    <!-- Mobile Requests Cards -->
+                    <div id="requestsCards" class="md:hidden space-y-4">
                     </div>
                 </div>
 
@@ -738,6 +783,18 @@
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Onasining telefoni</label>
                             <input type="text" id="stMotherPhone"
+                                class="w-full p-2.5 border border-slate-300 rounded-xl outline-none focus:border-primary">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4" id="stPointsRow">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Kelganida (Ball) *</label>
+                            <input type="number" id="stComingPoints" value="5"
+                                class="w-full p-2.5 border border-slate-300 rounded-xl outline-none focus:border-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Kechikkanda (Ball) *</label>
+                            <input type="number" id="stLatePoints" value="3"
                                 class="w-full p-2.5 border border-slate-300 rounded-xl outline-none focus:border-primary">
                         </div>
                     </div>
@@ -1084,6 +1141,8 @@
                 if (!s.id) s.id = "S" + Math.floor(Math.random() * 10000);
                 if (!s.coins) s.coins = 0;
                 if (!s.status) s.status = 'faol';
+                if (!s.comingPoints) s.comingPoints = 5;
+                if (!s.latePoints) s.latePoints = 3;
             });
 
             // Ensure every group has students array
@@ -1267,8 +1326,10 @@
 
         function renderPayments() {
             const tbody = document.getElementById('paymentsTableBody');
-            if (!tbody) return;
+            const cardContainer = document.getElementById('paymentsCards');
+            if (!tbody || !cardContainer) return;
             tbody.innerHTML = '';
+            cardContainer.innerHTML = '';
 
             const month = document.getElementById('paymentMonthSelect')?.value || "";
             const year = document.getElementById('paymentYearSelect')?.value || "";
@@ -1299,35 +1360,65 @@
 
             list.forEach(s => {
                 const status = (record[s.dbId]) || 'TO\'LAMADI';
+                const isPaid = status === 'paid' || status === 'TO\'LADI';
                 const sGroups = db.groups.filter(g => g.students && g.students.includes(s.dbId)).map(g => g.name).join(', ') || '-';
 
+                // Table Row (Desktop)
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                         <td class="py-4 px-6 font-bold text-slate-800">${s.name || ""} ${s.surname || ""} <span class="text-xs font-normal text-slate-400 block">ID: ${s.id || "?"}</span></td>
                         <td class="py-4 px-6 text-slate-500 text-sm">${sGroups}</td>
                         <td class="py-4 px-6 text-center">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold ${status === 'paid' || status === 'TO\'LADI' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                                ${status === 'paid' || status === 'TO\'LADI' ? "TO'LADI" : "TO'LAMADI"}
+                            <span class="px-3 py-1 rounded-full text-xs font-bold ${isPaid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                ${isPaid ? "TO'LADI" : "TO'LAMADI"}
                             </span>
                         </td>
                         <td class="py-4 px-6 text-right">
                             <div class="flex gap-2 justify-end">
                                 <button onclick="savePaymentStatus('${s.dbId}', 'paid')" 
-                                    class="px-4 py-2 rounded-xl text-xs font-bold transition ${status === 'paid' || status === 'TO\'LADI' ? 'bg-green-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-green-50 hover:text-green-600'}">
+                                    class="px-4 py-2 rounded-xl text-xs font-bold transition ${isPaid ? 'bg-green-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-green-50 hover:text-green-600'}">
                                     <i class="fas fa-check mr-1"></i> TO'LADI
                                 </button>
                                 <button onclick="savePaymentStatus('${s.dbId}', 'unpaid')" 
-                                    class="px-4 py-2 rounded-xl text-xs font-bold transition ${status === 'unpaid' || status === 'TO\'LAMADI' ? 'bg-red-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600'}">
+                                    class="px-4 py-2 rounded-xl text-xs font-bold transition ${!isPaid ? 'bg-red-500 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600'}">
                                     <i class="fas fa-times mr-1"></i> TO'LAMADI
                                 </button>
                             </div>
                         </td>
                     </tr>
                 `;
+
+                // Card View (Mobile)
+                cardContainer.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div class="font-bold text-slate-800">${s.name} ${s.surname}</div>
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${isPaid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} uppercase">
+                                ${isPaid ? "To'ladi" : "To'lamadi"}
+                            </span>
+                        </div>
+                        <div class="text-xs text-slate-500 flex items-center gap-2">
+                            <i class="fas fa-layer-group opacity-40"></i>
+                            <span class="truncate">${sGroups}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="savePaymentStatus('${s.dbId}', 'paid')" 
+                                class="flex-1 py-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${isPaid ? 'bg-green-500 text-white shadow-lg shadow-green-100' : 'bg-slate-50 text-slate-500'}">
+                                <i class="fas fa-check-circle"></i> TO'LADI
+                            </button>
+                            <button onclick="savePaymentStatus('${s.dbId}', 'unpaid')" 
+                                class="flex-1 py-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${!isPaid ? 'bg-red-500 text-white shadow-lg shadow-red-100' : 'bg-slate-50 text-slate-500'}">
+                                <i class="fas fa-times-circle"></i> EMAS
+                            </button>
+                        </div>
+                    </div>
+                `;
             });
 
             if (list.length === 0) {
+                const emptyMsg = '<div class="text-center py-10 text-slate-400 italic bg-white rounded-2xl border border-dashed border-slate-200">Ma\'lumot topilmadi.</div>';
                 tbody.innerHTML = '<tr><td colspan="4" class="text-center py-10 text-slate-400 italic">O\'quvchilar topilmadi.</td></tr>';
+                cardContainer.innerHTML = emptyMsg;
             }
         }
 
@@ -1369,10 +1460,15 @@
         // Sidebar toggle for mobile
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
             if (sb.classList.contains('-translate-x-full')) {
                 sb.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.replace('opacity-0', 'opacity-100'), 10);
             } else {
                 sb.classList.add('-translate-x-full');
+                overlay.classList.replace('opacity-100', 'opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
             }
         }
         document.getElementById('openSidebarBtn').addEventListener('click', toggleSidebar);
@@ -1383,8 +1479,10 @@
         // --- STUDENTS ---
         function renderStudents() {
             const tbody = document.getElementById('studentsTableBody');
-            if (!tbody) return;
+            const cardContainer = document.getElementById('studentsCardContainer');
+            if (!tbody || !cardContainer) return;
             tbody.innerHTML = '';
+            cardContainer.innerHTML = '';
 
             const search = (document.getElementById('searchStudent')?.value || "").toLowerCase();
             const payF = document.getElementById('stPayFilter')?.value || "all";
@@ -1397,7 +1495,6 @@
 
             let list = Array.isArray(db.students) ? [...db.students] : [];
 
-            // Safe String Filtering
             if (search) {
                 list = list.filter(s =>
                     (s.id || "").toLowerCase().includes(search) ||
@@ -1406,7 +1503,6 @@
                 );
             }
 
-            // Pay Filter
             if (payF === 'paid') {
                 list = list.filter(s => {
                     const status = payRecord[s.dbId];
@@ -1419,14 +1515,12 @@
                 });
             }
 
-            // Telegram Filter
             if (tgF === 'connected') {
                 list = list.filter(s => s.tgChatId);
             } else if (tgF === 'not_connected') {
                 list = list.filter(s => !s.tgChatId);
             }
 
-            // Status Filter
             const sF = document.getElementById('stStatusFilter')?.value || 'faol';
             if (sF === 'faol') {
                 list = list.filter(s => s.status !== 'muzlatilgan');
@@ -1434,14 +1528,13 @@
                 list = list.filter(s => s.status === 'muzlatilgan');
             }
 
-            // Ultra Safe Sort
             list.sort((a, b) => (b.dbId || "").toString().localeCompare((a.dbId || "").toString()));
 
             list.forEach(s => {
                 const isFrozen = s.status === 'muzlatilgan';
                 const statusBadge = isFrozen ?
-                    `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold"><i class="fas fa-snowflake"></i> Muzlatilgan</span>` :
-                    `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Faol</span>`;
+                    `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="fas fa-snowflake"></i> Muzlatilgan</span>` :
+                    `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold uppercase text-center min-w-[50px]">Faol</span>`;
 
                 const tgBadge = s.tgChatId ?
                     `<span class="text-blue-500"><i class="fab fa-telegram fa-lg"></i></span>` :
@@ -1449,16 +1542,17 @@
 
                 const sGroups = db.groups.filter(g => g.students && g.students.includes(s.dbId)).map(g => g.name).join(', ') || '-';
 
+                // Table Row (Desktop)
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0 cursor-pointer" onclick="showProfile('${s.dbId}')">
-                        <td class="py-3 px-6 font-mono font-medium text-slate-700">${s.id || "?"}</td>
-                        <td class="py-3 px-6 font-medium text-slate-800">${s.name || ""} ${s.surname || ""}</td>
-                        <td class="py-3 px-6 text-slate-500">${s.phone || '-'}</td>
-                        <td class="py-3 px-6 text-slate-500 text-xs">${sGroups}</td>
-                        <td class="py-3 px-6"><span class="bg-yellow-100 text-yellow-700 font-bold px-2 py-1 rounded-full text-xs">${s.coins || 0} <i class="fas fa-coins"></i></span></td>
-                        <td class="py-3 px-6 text-center">${statusBadge}</td>
-                        <td class="py-3 px-6 text-center">${tgBadge}</td>
-                        <td class="py-3 px-6 text-right space-x-2" onclick="event.stopPropagation()">
+                        <td class="py-4 px-6 font-mono font-medium text-slate-700">${s.id || "?"}</td>
+                        <td class="py-4 px-6 font-medium text-slate-800">${s.name || ""} ${s.surname || ""}</td>
+                        <td class="py-4 px-6 text-slate-500">${s.phone || '-'}</td>
+                        <td class="py-4 px-6 text-slate-500 text-xs">${sGroups}</td>
+                        <td class="py-4 px-6"><span class="bg-yellow-100 text-yellow-700 font-bold px-2 py-1 rounded-full text-xs">${s.coins || 0} <i class="fas fa-coins"></i></span></td>
+                        <td class="py-4 px-6 text-center">${statusBadge}</td>
+                        <td class="py-4 px-6 text-center">${tgBadge}</td>
+                        <td class="py-4 px-6 text-right space-x-2" onclick="event.stopPropagation()">
                             ${currentUser.role === 'superadmin' ? `
                                 <button onclick="editCoin('${s.dbId}')" title="Coin/Status" class="w-8 h-8 rounded-full bg-yellow-50 text-yellow-600 hover:bg-yellow-100 transition"><i class="fas fa-coins"></i></button>
                             ` : ''}
@@ -1468,10 +1562,43 @@
                         </td>
                     </tr>
                 `;
+
+                // Card View (Mobile)
+                cardContainer.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3" onclick="showProfile('${s.dbId}')">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-slate-800 text-lg">${s.name} ${s.surname}</div>
+                                <div class="text-xs text-slate-400 font-mono">ID: ${s.id}</div>
+                            </div>
+                            <div class="flex gap-2 items-center">
+                                ${tgBadge}
+                                ${statusBadge}
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <div class="text-slate-500 font-medium"><i class="fas fa-phone mr-1 opacity-40"></i> ${s.phone || '-'}</div>
+                            <div class="bg-yellow-100 text-yellow-700 font-bold px-3 py-1 rounded-full text-xs">${s.coins || 0} <i class="fas fa-coins text-[10px] ml-0.5"></i></div>
+                        </div>
+                        <div class="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl flex items-center gap-2">
+                            <i class="fas fa-layer-group text-primary opacity-50"></i>
+                            <span class="truncate">${sGroups}</span>
+                        </div>
+                        <div class="flex gap-2 pt-3 border-t border-slate-100" onclick="event.stopPropagation()">
+                             ${currentUser.role === 'superadmin' ? `
+                                <button onclick="editCoin('${s.dbId}')" class="flex-1 py-2.5 rounded-xl bg-yellow-50 text-yellow-600 text-[10px] font-bold uppercase tracking-wider"><i class="fas fa-coins mr-1"></i> Ball</button>
+                            ` : ''}
+                            <button onclick="toggleFreeze('${s.dbId}')" class="flex-1 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider"><i class="fas ${isFrozen ? 'fa-sun' : 'fa-snowflake'} mr-1"></i> ${isFrozen ? 'Faol' : 'Muzlat'}</button>
+                            <button onclick="editStudent('${s.dbId}')" class="flex-1 py-2.5 rounded-xl bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider"><i class="fas fa-pen mr-1"></i> Tuzat</button>
+                        </div>
+                    </div>
+                `;
             });
 
             if (list.length === 0) {
+                const emptyMsg = '<div class="text-center py-10 text-slate-400 italic bg-white rounded-2xl border border-dashed border-slate-200">O\'quvchilar topilmadi.</div>';
                 tbody.innerHTML = '<tr><td colspan="8" class="text-center py-10 text-slate-400 italic">O\'quvchilar topilmadi.</td></tr>';
+                cardContainer.innerHTML = emptyMsg;
             }
         }
 
@@ -1601,7 +1728,9 @@
                 fatherPhone: document.getElementById('stFatherPhone').value,
                 motherName: document.getElementById('stMotherName').value,
                 motherPhone: document.getElementById('stMotherPhone').value,
-                note: document.getElementById('stNote').value
+                note: document.getElementById('stNote').value,
+                comingPoints: parseInt(document.getElementById('stComingPoints').value) || 5,
+                latePoints: parseInt(document.getElementById('stLatePoints').value) || 3
             };
 
             if (dbId) {
@@ -1641,6 +1770,16 @@
             document.getElementById('stMotherName').value = st.motherName || '';
             document.getElementById('stMotherPhone').value = st.motherPhone || '';
             document.getElementById('stNote').value = st.note || '';
+            document.getElementById('stComingPoints').value = st.comingPoints || 5;
+            document.getElementById('stLatePoints').value = st.latePoints || 3;
+
+            // Hide/Show point settings based on role
+            const pointsRow = document.getElementById('stPointsRow');
+            if (currentUser.role === 'superadmin') {
+                pointsRow.classList.remove('hidden');
+            } else {
+                pointsRow.classList.add('hidden');
+            }
 
             document.getElementById('studentModalTitle').textContent = "O'quvchini tahrirlash";
             openModal('studentModal');
@@ -1965,22 +2104,25 @@
             if (!groupId || !date) return showToast("Guruh va sanani tanlang", "error");
 
             const g = db.groups.find(x => x.id === groupId);
-            if (g.students.length === 0) return showToast("Bu guruhda o'quvchilar yo'q", "error");
+            if (!g || g.students.length === 0) return showToast("Bu guruhda o'quvchilar yo'q", "error");
 
             const recordKey = `${groupId}_${date}`;
             const existingRecord = db.attendance[recordKey] || {};
 
             const tbody = document.getElementById('attendanceTableBody');
+            const cardContainer = document.getElementById('attendanceCards');
             tbody.innerHTML = '';
+            cardContainer.innerHTML = '';
 
             let i = 1;
             const uniqueStudents = [...new Set(g.students)];
             uniqueStudents.forEach(stId => {
                 const st = db.students.find(s => s.dbId === stId);
-                if (!st || st.status === 'muzlatilgan') return; // Skip deleted or frozen
+                if (!st || st.status === 'muzlatilgan') return; 
 
-                const status = existingRecord[stId] || null; // No default, force admin to click
+                const status = existingRecord[stId] || null;
 
+                // Table Row (Desktop)
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition" data-st-id="${st.dbId}">
                         <td class="py-3 px-6 text-slate-500">${i++}</td>
@@ -2000,8 +2142,44 @@
                         </td>
                     </tr>
                 `;
+
+                // Card (Mobile)
+                cardContainer.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4" data-st-card-id="${st.dbId}">
+                        <div class="flex justify-between items-center group">
+                            <div class="font-bold text-slate-800 text-lg">${st.name} ${st.surname}</div>
+                            <div class="text-xs text-slate-400 font-mono bg-slate-100 px-2 py-1 rounded-lg">ID: ${st.id}</div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="saveSingleAttendance('${st.dbId}', 'KELDI'); updateAttCardUI(this, 'KELDI')" 
+                                class="py-3.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${status === 'KELDI' ? 'bg-green-500 text-white shadow-lg shadow-green-200' : 'bg-slate-100 text-slate-500'}">
+                                <i class="fas fa-check-circle"></i> KELDI
+                            </button>
+                            <button onclick="saveSingleAttendance('${st.dbId}', 'KECHIKDI'); updateAttCardUI(this, 'KECHIKDI')" 
+                                class="py-3.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${status === 'KECHIKDI' ? 'bg-yellow-500 text-white shadow-lg shadow-yellow-200' : 'bg-slate-100 text-slate-500'}">
+                                <i class="fas fa-clock"></i> KECHIKDI
+                            </button>
+                            <button onclick="handleAbsenceClick('${st.dbId}');" 
+                                class="col-span-2 py-3.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${(status === 'SABABLI' || status === 'SABABSIZ' || status === 'KELMADI') ? 'bg-red-500 text-white shadow-lg shadow-red-200' : 'bg-slate-100 text-slate-500'}">
+                                <i class="fas fa-times-circle"></i> KELMADI / SABABLI
+                            </button>
+                        </div>
+                    </div>
+                `;
             });
             document.getElementById('attendancePanel').classList.remove('hidden');
+        }
+
+        function updateAttCardUI(btn, status) {
+            const container = btn.closest('div.grid');
+            const buttons = container.querySelectorAll('button');
+            buttons.forEach(b => {
+                b.className = "py-3.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-slate-100 text-slate-500";
+            });
+            
+            if (status === 'KELDI') btn.className = "py-3.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-green-500 text-white shadow-lg shadow-green-200";
+            if (status === 'KECHIKDI') btn.className = "py-3.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-yellow-500 text-white shadow-lg shadow-yellow-200";
+            if (status === 'KELMADI' || status === 'SABABLI' || status === 'SABABSIZ') btn.className = "py-3.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 bg-red-500 text-white shadow-lg shadow-red-200";
         }
 
         function updateAttUI(radio) {
@@ -2057,15 +2235,17 @@
             db.attendance[recordKey][stId] = finalStatus;
 
             const st = db.students.find(s => s.dbId === stId);
+            const cp = st.comingPoints || 5;
+            const lp = st.latePoints || 3;
             let coinDiff = 0;
 
             // Revert old
-            if (oldStatus === 'KELDI') coinDiff -= 5;
-            if (oldStatus === 'KECHIKDI') coinDiff -= 3;
+            if (oldStatus === 'KELDI') coinDiff -= cp;
+            if (oldStatus === 'KECHIKDI') coinDiff -= lp;
 
             // Apply new
-            if (finalStatus === 'KELDI') coinDiff += 5;
-            if (finalStatus === 'KECHIKDI') coinDiff += 3;
+            if (finalStatus === 'KELDI') coinDiff += cp;
+            if (finalStatus === 'KECHIKDI') coinDiff += lp;
 
             if (coinDiff !== 0) {
                 st.coins = (st.coins || 0) + coinDiff;
@@ -2077,7 +2257,7 @@
             // TG MESSAGE LOGIC
             if (st.tgChatId && (finalStatus === 'KELDI' || finalStatus === 'KECHIKDI')) {
                 const dateStr = date;
-                let coinEarned = finalStatus === 'KELDI' ? '+5' : '+3';
+                let coinEarned = finalStatus === 'KELDI' ? `+${cp}` : `+${lp}`;
                 let text = `👤 ${st.name} ${st.surname}\n` +
                     `📅 Sana: ${dateStr}\n` +
                     `📚 Guruh: ${groupName}\n` +
@@ -2104,7 +2284,10 @@
 
         function renderAbsentees() {
             const tbody = document.getElementById('absenteesTableBody');
+            const cardContainer = document.getElementById('absenteesCards');
+            if (!tbody || !cardContainer) return;
             tbody.innerHTML = '';
+            cardContainer.innerHTML = '';
 
             let list = [];
             Object.entries(db.attendance).forEach(([key, items]) => {
@@ -2124,6 +2307,7 @@
             list.sort((a, b) => b.date.localeCompare(a.date));
 
             list.forEach(item => {
+                // Table Row (Desktop)
                 tbody.innerHTML += `
                      <tr class="hover:bg-slate-50 transition border-b border-slate-50 border-solid border-b-2">
                          <td class="py-3 px-6 font-medium text-slate-700">${item.date}</td>
@@ -2137,10 +2321,29 @@
                          </td>
                      </tr>
                  `;
+
+                 // Card View (Mobile)
+                 cardContainer.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div class="font-bold text-slate-800">${item.st.name} ${item.st.surname}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">${item.date}</div>
+                        </div>
+                        <div class="text-xs text-slate-500 flex items-center gap-2">
+                             <i class="fas fa-layer-group opacity-40"></i>
+                             <span>${item.g.name}</span>
+                        </div>
+                        <button onclick="markLessonCompleted('${item.recordKey}', '${item.st.dbId}')" class="w-full py-3 bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-200 uppercase tracking-wider">
+                            <i class="fas fa-check-circle mr-1"></i> Darslar o'tib berildi
+                        </button>
+                    </div>
+                `;
             });
 
             if (list.length === 0) {
+                const emptyMsg = '<div class="text-center py-10 text-slate-400 italic bg-white rounded-2xl border border-dashed border-slate-200">Kelmagan o\'quvchilar yo\'q.</div>';
                 tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-400">Kelmagan o\'quvchilar topilmadi.</td></tr>';
+                cardContainer.innerHTML = emptyMsg;
             }
         }
 
@@ -2165,7 +2368,11 @@
         // --- LEADERBOARD ---
         function renderLeaderboard() {
             const tbody = document.getElementById('leaderboardBody');
+            const cardContainer = document.getElementById('leaderboardCards');
+            if (!tbody || !cardContainer) return;
             tbody.innerHTML = '';
+            cardContainer.innerHTML = '';
+
             const search = document.getElementById('searchLeaderboard').value.toLowerCase();
             const groupFilter = document.getElementById('leaderboardGroupFilter').value;
 
@@ -2190,15 +2397,16 @@
 
             let rank = 1;
             sorted.forEach(s => {
-                if (s.status === 'muzlatilgan') return; // hide frozen from leaderboard
+                if (s.status === 'muzlatilgan') return; 
 
-                let rankTpl = `<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold mx-auto">${rank}</div>`;
-                if (rank === 1) rankTpl = `<div class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center font-bold mx-auto text-lg"><i class="fas fa-medal"></i></div>`;
-                if (rank === 2) rankTpl = `<div class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold mx-auto"><i class="fas fa-medal"></i></div>`;
-                if (rank === 3) rankTpl = `<div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold mx-auto"><i class="fas fa-medal"></i></div>`;
+                let rankTpl = `<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold mx-auto text-sm">${rank}</div>`;
+                if (rank === 1) rankTpl = `<div class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center font-bold mx-auto text-base"><i class="fas fa-medal"></i></div>`;
+                if (rank === 2) rankTpl = `<div class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold mx-auto text-base"><i class="fas fa-medal"></i></div>`;
+                if (rank === 3) rankTpl = `<div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold mx-auto text-base"><i class="fas fa-medal"></i></div>`;
 
                 const sGroups = db.groups.filter(g => g.students.includes(s.dbId)).map(g => g.name).join(', ');
 
+                // Table Row (Desktop)
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
                         <td class="py-4 px-6">${rankTpl}</td>
@@ -2207,14 +2415,37 @@
                         <td class="py-4 px-6 text-right font-mono font-bold text-lg text-primary">${s.coins || 0}</td>
                     </tr>
                 `;
+
+                // Card View (Mobile)
+                cardContainer.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                        <div class="shrink-0 w-10">
+                            ${rankTpl}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-slate-800 truncate text-sm">${s.name} ${s.surname}</div>
+                            <div class="text-[10px] text-slate-400 truncate">${sGroups || '-'}</div>
+                        </div>
+                        <div class="shrink-0 font-mono font-bold text-base text-primary">
+                            ${s.coins || 0}
+                        </div>
+                    </div>
+                `;
                 rank++;
             });
+
+            if (rank === 1) {
+                cardContainer.innerHTML = '<div class="text-center py-10 text-slate-400 italic bg-white rounded-2xl border border-dashed border-slate-200">Ma\'lumot yo\'q.</div>';
+            }
         }
 
         // --- ADMINS ---
         function renderAdmins() {
             const tbody = document.getElementById('adminsTableBody');
+            const cardContainer = document.getElementById('adminsCards');
+            if (!tbody || !cardContainer) return;
             tbody.innerHTML = '';
+            cardContainer.innerHTML = '';
 
             const adminCount = db.users.filter(u => u.role === 'admin').length;
             const addBtn = document.querySelector('[onclick="openModal(\'adminModal\')"]');
@@ -2232,12 +2463,31 @@
                         <button onclick="deleteAdmin('${u.id}')" class="text-red-500 hover:bg-red-50 p-1.5 rounded"><i class="fas fa-trash"></i></button>
                     </div>`;
 
+                const mobileActions = isSuper ? 
+                    `<button onclick="openPassModal('${u.id}')" class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fas fa-key text-sm"></i></button>` :
+                    `<div class="flex gap-2">
+                        <button onclick="openPassModal('${u.id}')" class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fas fa-key text-sm"></i></button>
+                        <button onclick="deleteAdmin('${u.id}')" class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center"><i class="fas fa-trash text-sm"></i></button>
+                    </div>`;
+
+                // Table Row (Desktop)
                 tbody.innerHTML += `
-                    <tr>
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-50 last:border-0">
                         <td class="py-3 px-6 font-medium">${u.username}</td>
-                        <td class="py-3 px-6"><span class="px-2 py-1 rounded text-xs font-bold ${u.role === 'superadmin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${u.role.toUpperCase()}</span></td>
+                        <td class="py-3 px-6"><span class="px-2 py-1 rounded text-xs font-bold ${isSuper ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${u.role.toUpperCase()}</span></td>
                         <td class="py-3 px-6 text-right">${actions}</td>
                     </tr>
+                `;
+
+                // Card View (Mobile)
+                cardContainer.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
+                        <div>
+                            <div class="font-bold text-slate-800">${u.username}</div>
+                            <div class="text-[10px] ${isSuper ? 'text-purple-500' : 'text-blue-500'} uppercase font-bold tracking-wider mt-0.5">${u.role}</div>
+                        </div>
+                        ${mobileActions}
+                    </div>
                 `;
             });
         }
